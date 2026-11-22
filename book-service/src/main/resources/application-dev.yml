@@ -1,0 +1,12 @@
+# Profil dev : H2 en memoire, aucun Docker necessaire.
+spring:
+  datasource:
+    url: jdbc:h2:mem:bookdb;DB_CLOSE_DELAY=-1
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+pricing:
+  base-url: http://localhost:8082

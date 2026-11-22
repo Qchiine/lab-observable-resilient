@@ -1,0 +1,55 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: book-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: false
+
+pricing:
+  base-url: ${PRICING_BASE_URL:http://localhost:8082}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,circuitbreakers,circuitbreakerevents"
+  endpoint:
+    health:
+      show-details: "always"
+      probes:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+  info:
+    env:
+      enabled: true
+
+resilience4j:
+  retry:
+    instances:
+      pricing:
+        maxAttempts: 3
+        waitDuration: 300ms
+        retryExceptions:
+          - java.lang.RuntimeException
+  circuitbreaker:
+    instances:
+      pricing:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+info:
+  app:
+    name: book-service
+    tp: "TP 26 - service observable et resilient"

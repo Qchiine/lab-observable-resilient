@@ -1,0 +1,122 @@
+# =====================================================================
+# TP 26 - Microservice observable & resilient
+#   MySQL (volume + healthcheck) + pricing-service + 3 instances book-service
+#
+#   docker compose up -d --build
+#   docker compose ps
+#
+# Ports par defaut = ceux de l'enonce : 8081 / 8082 / 8083 / 8084 / 3306.
+# En cas de conflit : docker compose --env-file .env.local-ports up -d --build
+# =====================================================================
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-tp26
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: bookdb
+      MYSQL_USER: bookuser
+      MYSQL_PASSWORD: bookpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      # Volume nomme : les donnees survivent a "docker compose down"
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -prootpass --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    networks: [tp26-net]
+
+  pricing-service:
+    build: ./pricing-service
+    image: tp26/pricing-service:1.0
+    container_name: pricing-service
+    restart: unless-stopped
+    ports:
+      - "${PRICING_PORT:-8082}:8082"
+    healthcheck:
+      # curl est installe dans l'image : pas besoin de wget
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8082/actuator/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+    networks: [tp26-net]
+
+  book-service-1:
+    build: ./book-service
+    image: tp26/book-service:1.0
+    container_name: book-service-1
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "${BOOK1_PORT:-8081}:8081"
+    depends_on:
+      # Wait strategy : ne demarre que si MySQL et pricing sont reellement prets
+      mysql:
+        condition: service_healthy
+      pricing-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 40s
+    networks: [tp26-net]
+
+  book-service-2:
+    build: ./book-service
+    image: tp26/book-service:1.0
+    container_name: book-service-2
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "${BOOK2_PORT:-8083}:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      pricing-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 40s
+    networks: [tp26-net]
+
+  book-service-3:
+    build: ./book-service
+    image: tp26/book-service:1.0
+    container_name: book-service-3
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "${BOOK3_PORT:-8084}:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      pricing-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 40s
+    networks: [tp26-net]
+
+volumes:
+  mysql_data:
+
+networks:
+  tp26-net:
+    driver: bridge

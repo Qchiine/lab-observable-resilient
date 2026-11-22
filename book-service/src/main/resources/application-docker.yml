@@ -1,0 +1,17 @@
+# Profil docker : MySQL et pricing-service sont resolus par le DNS de Compose.
+# ATTENTION : "localhost" designe le conteneur lui-meme, pas la machine hote.
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/bookdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:bookuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:bookpass}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      initialization-fail-timeout: -1
+      connection-timeout: 10000
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+pricing:
+  base-url: ${PRICING_BASE_URL:http://pricing-service:8082}

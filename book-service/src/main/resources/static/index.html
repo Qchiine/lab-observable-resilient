@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>TP 26 - Console d'observabilite</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Ctext x='32' y='42' font-size='26' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%2338bdf8'%3E26%3C/text%3E%3C/svg%3E"/>
+    <link rel="stylesheet" href="/console.css"/>
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <span class="logo">26</span>
+        <div>
+            <h1>Console d'observabilite</h1>
+            <p>book-service &times; 3 &middot; pricing-service &middot; MySQL</p>
+        </div>
+    </div>
+    <div class="topbar-actions">
+        <span id="instance" class="badge">instance &mdash;</span>
+        <button id="refresh" type="button">Actualiser</button>
+    </div>
+</header>
+
+<main>
+    <section class="kpis" id="kpis"></section>
+
+    <section class="grid">
+        <div class="panel">
+            <h2>Circuit breaker <span class="hint">Resilience4j &middot; pricing</span></h2>
+            <div id="cb" class="kv"></div>
+        </div>
+        <div class="panel">
+            <h2>Retry <span class="hint">3 tentatives &middot; 300 ms</span></h2>
+            <div id="retry" class="kv"></div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Pricing-service <span class="hint" id="pricing-url"></span></h2>
+        <div id="pricing" class="kv"></div>
+        <div class="actions">
+            <button class="danger" id="chaos-on" type="button">Simuler une panne (100%)</button>
+            <button class="ok" id="chaos-off" type="button">Retablir le service</button>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Livres en base <span class="hint">MySQL partage entre les 3 instances</span></h2>
+        <table id="books">
+            <thead><tr><th>#</th><th>Titre</th><th>Auteur</th><th>Stock</th><th>Version</th><th>Emprunter</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <div class="actions">
+            <input id="titre" placeholder="Titre" />
+            <input id="auteur" placeholder="Auteur" />
+            <input id="stock" type="number" value="3" min="0" style="width:90px" />
+            <button class="ok" id="creer" type="button">Ajouter un livre</button>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Journal</h2>
+        <pre id="journal">// pret</pre>
+    </section>
+</main>
+
+<footer><span>Ports machine : 8081 / 8083 / 8084 &middot; port interne 8081 &middot; MySQL 3306</span></footer>
+<script src="/console.js"></script>
+</body>
+</html>
